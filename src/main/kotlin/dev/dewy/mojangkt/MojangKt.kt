@@ -1,6 +1,7 @@
 package dev.dewy.mojangkt
 
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.gson.responseObject
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import kotlin.coroutines.resume
@@ -21,6 +22,36 @@ class MojangKt {
                 "Authorization" to "Bearer $value"
             )
         }
+
+    suspend fun getPlayerFromUsername(username: String): PrimitivePlayer = suspendCoroutine { cont ->
+        "https://api.mojang.com/users/profiles/minecraft/$username".httpGet()
+            .responseObject<PrimitivePlayer> { _, _, result ->
+                when (result) {
+                    is Result.Failure -> {
+                        cont.resumeWithException(result.getException())
+                    }
+
+                    is Result.Success -> {
+                        cont.resume(result.value)
+                    }
+                }
+            }
+    }
+
+    suspend fun getPlayerFromUsername(username: String, timestamp: Long): PrimitivePlayer = suspendCoroutine { cont ->
+        "https://api.mojang.com/users/profiles/minecraft/$username?at=$timestamp".httpGet()
+            .responseObject<PrimitivePlayer> { _, _, result ->
+                when (result) {
+                    is Result.Failure -> {
+                        cont.resumeWithException(result.getException())
+                    }
+
+                    is Result.Success -> {
+                        cont.resume(result.value)
+                    }
+                }
+            }
+    }
 
     suspend fun getBlockedServers(): List<String> = suspendCoroutine { cont ->
         "https://sessionserver.mojang.com/blockedservers".httpGet()
