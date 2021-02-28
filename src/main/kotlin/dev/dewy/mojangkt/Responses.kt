@@ -6,3 +6,12 @@ class PrimitivePlayer(
     val legacy: Boolean = false,
     val demo: Boolean = false
 )
+
+class NameHistoryNode(
+    val name: String,
+    val changedToAt: Long
+)
+
+class NameHistory(
+    val history: List<NameHistoryNode>
+)

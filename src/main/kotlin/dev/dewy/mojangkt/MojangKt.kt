@@ -38,16 +38,16 @@ class MojangKt {
             }
     }
 
-    suspend fun getPlayerFromUsername(username: String, timestamp: Long): PrimitivePlayer = suspendCoroutine { cont ->
-        "https://api.mojang.com/users/profiles/minecraft/$username?at=$timestamp".httpGet()
-            .responseObject<PrimitivePlayer> { _, _, result ->
+    suspend fun getNameHistory(uuid: String): NameHistory = suspendCoroutine { cont ->
+        "https://api.mojang.com/user/profiles/$uuid/names".httpGet()
+            .responseObject<List<NameHistoryNode>> { _, _, result ->
                 when (result) {
                     is Result.Failure -> {
                         cont.resumeWithException(result.getException())
                     }
 
                     is Result.Success -> {
-                        cont.resume(result.value)
+                        cont.resume(NameHistory(result.value))
                     }
                 }
             }
