@@ -1,9 +1,12 @@
 package dev.dewy.mojangkt
 
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.gson.jsonBody
 import com.github.kittinunf.fuel.gson.responseObject
 import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
+import com.google.gson.Gson
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -26,6 +29,24 @@ class MojangKt {
     suspend fun getPlayerFromUsername(username: String): PrimitivePlayer = suspendCoroutine { cont ->
         "https://api.mojang.com/users/profiles/minecraft/$username".httpGet()
             .responseObject<PrimitivePlayer> { _, _, result ->
+                when (result) {
+                    is Result.Failure -> {
+                        cont.resumeWithException(result.getException())
+                    }
+
+                    is Result.Success -> {
+                        cont.resume(result.value)
+                    }
+                }
+            }
+    }
+
+    suspend fun getPlayersFromUsernames(usernames: List<String>): List<PrimitivePlayer> = suspendCoroutine { cont ->
+        "https://api.mojang.com/profiles/minecraft".httpPost()
+            .jsonBody(
+                usernames, Gson()
+            )
+            .responseObject<List<PrimitivePlayer>> { _, _, result ->
                 when (result) {
                     is Result.Failure -> {
                         cont.resumeWithException(result.getException())
