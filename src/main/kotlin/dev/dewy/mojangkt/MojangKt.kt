@@ -26,8 +26,8 @@ class MojangKt {
             )
         }
 
-    suspend fun getPlayerFromUsername(username: String): PrimitivePlayer = suspendCoroutine { cont ->
-        "https://api.mojang.com/users/profiles/minecraft/$username".httpGet()
+    suspend fun getPlayerFromName(name: String): PrimitivePlayer = suspendCoroutine { cont ->
+        "https://api.mojang.com/users/profiles/minecraft/$name".httpGet()
             .responseObject<PrimitivePlayer> { _, _, result ->
                 when (result) {
                     is Result.Failure -> {
@@ -41,10 +41,10 @@ class MojangKt {
             }
     }
 
-    suspend fun getPlayersFromUsernames(usernames: List<String>): List<PrimitivePlayer> = suspendCoroutine { cont ->
+    suspend fun getPlayersFromNames(names: List<String>): List<PrimitivePlayer> = suspendCoroutine { cont ->
         "https://api.mojang.com/profiles/minecraft".httpPost()
             .jsonBody(
-                usernames, Gson()
+                names, Gson()
             )
             .responseObject<List<PrimitivePlayer>> { _, _, result ->
                 when (result) {
