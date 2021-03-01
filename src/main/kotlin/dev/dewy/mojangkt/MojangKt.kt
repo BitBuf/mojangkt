@@ -5,6 +5,7 @@ import com.github.kittinunf.fuel.gson.jsonBody
 import com.github.kittinunf.fuel.gson.responseObject
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
+import com.github.kittinunf.fuel.httpPut
 import com.github.kittinunf.result.Result
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -126,6 +127,27 @@ class MojangKt {
 
                     is Result.Success -> {
                         cont.resume(NameHistory(result.value))
+                    }
+                }
+            }
+    }
+
+    suspend fun changeName(name: String) = suspendCoroutine<Unit> { cont ->
+        "https://api.minecraftservices.com/minecraft/profile/name/$name"
+            .httpPut()
+            .response { _, response, result ->
+                when (result) {
+                    is Result.Failure -> {
+                        when (response.statusCode) {
+                            400 -> cont.resumeWithException(InvalidNameException("Name must follow Mojang's name rules."))
+                            401 -> cont.resumeWithException(UnauthorizedAccessException("Token expired or incorrect."))
+                            403 -> cont.resumeWithException(UnavailableNameException("Name either taken or is in some other way unavailable."))
+                            500 -> cont.resumeWithException(TimedOutException("Timed out."))
+                        }
+                    }
+
+                    is Result.Success -> {
+                        cont.resume(Unit)
                     }
                 }
             }
