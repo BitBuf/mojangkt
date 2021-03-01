@@ -7,6 +7,22 @@ class PrimitivePlayer(
     val demo: Boolean = false
 )
 
+class Profile(
+    val player: PrimitivePlayer,
+    val skin: Skin,
+    val capeUrl: String = ""
+)
+
+class Skin(
+    val url: String,
+    val type: SkinType
+)
+
+enum class SkinType {
+    DEFAULT,
+    SLIM
+}
+
 class NameHistoryNode(
     val name: String,
     val changedToAt: Long
