@@ -3,6 +3,7 @@ package dev.dewy.mojangkt
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.gson.jsonBody
 import com.github.kittinunf.fuel.gson.responseObject
+import com.github.kittinunf.fuel.httpDelete
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.fuel.httpPut
@@ -148,6 +149,27 @@ class MojangKt {
 
                     is Result.Success -> {
                         cont.resume(Unit)
+                    }
+                }
+            }
+    }
+
+    suspend fun resetSkin(uuid: String) = suspendCoroutine<Unit> { cont ->
+        "https://api.mojang.com/user/profile/$uuid/skin"
+            .httpDelete()
+            .responseString { _, _, result ->
+                when (result) {
+                    is Result.Failure -> {
+                        cont.resumeWithException(result.getException())
+                    }
+
+                    is Result.Success -> {
+                        val errorObj = gson.fromJson(result.value, JsonObject::class.java)
+
+                        if (errorObj != null)
+                            cont.resumeWithException(MojangApiException("${errorObj["error"].asString}: ${errorObj["errorMessage"].asString}"))
+                        else
+                            cont.resume(Unit)
                     }
                 }
             }
